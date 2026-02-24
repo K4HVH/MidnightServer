@@ -18,10 +18,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for entry in fs::read_dir(&out)? {
         let entry = entry?;
         let path = entry.path();
-        if let Some(name) = path.file_name() {
-            if name.to_string_lossy().ends_with(".rs") {
-                fs::copy(&path, generated_dir.join(name))?;
-            }
+        if let Some(name) = path.file_name()
+            && name.to_string_lossy().ends_with(".rs")
+        {
+            fs::copy(&path, generated_dir.join(name))?;
         }
     }
 

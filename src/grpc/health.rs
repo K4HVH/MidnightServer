@@ -1,9 +1,12 @@
 use std::sync::Arc;
 
+use crate::error::AppError;
 use crate::proto::{CheckRequest, CheckResponse, check_response::ServingStatus};
 use crate::proto::health_service_server::HealthService;
 use crate::state::AppState;
 use tonic::{Request, Response, Status};
+
+const KNOWN_SERVICES: &[&str] = &["", "midnightui.HealthService"];
 
 pub struct HealthServiceImpl {
     state: Arc<AppState>,
@@ -19,8 +22,16 @@ impl HealthServiceImpl {
 impl HealthService for HealthServiceImpl {
     async fn check(
         &self,
-        _request: Request<CheckRequest>,
+        request: Request<CheckRequest>,
     ) -> Result<Response<CheckResponse>, Status> {
+        let service = &request.get_ref().service;
+
+        if !service.is_empty() && !KNOWN_SERVICES.contains(&service.as_str()) {
+            return Err(AppError::NotFound(format!("unknown service: {service}")).into());
+        }
+
+        tracing::debug!(service = %service, "health check");
+
         let response = CheckResponse {
             status: ServingStatus::Serving.into(),
             version: env!("CARGO_PKG_VERSION").to_string(),

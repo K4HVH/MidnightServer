@@ -7,10 +7,12 @@ use tonic::transport::Server;
 use tonic_reflection::server::Builder as ReflectionBuilder;
 use tonic_web::GrpcWebLayer;
 use tower_http::cors::{AllowOrigin, Any, CorsLayer};
-use tracing_subscriber::{EnvFilter, fmt, layer::SubscriberExt, util::SubscriberInitExt};
+use tower_http::trace::TraceLayer;
 
 mod config;
+pub mod error;
 mod grpc;
+mod logging;
 mod proto;
 mod state;
 
@@ -27,14 +29,7 @@ async fn main() -> Result<()> {
     let _ = dotenvy::dotenv();
 
     let config = config::Config::from_env();
-
-    tracing_subscriber::registry()
-        .with(
-            EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| EnvFilter::new(&config.log_level)),
-        )
-        .with(fmt::layer())
-        .init();
+    logging::init(&config);
 
     let addr: SocketAddr = config.listen_addr.parse()?;
 
@@ -58,6 +53,7 @@ async fn main() -> Result<()> {
         .accept_http1(true)
         .layer(cors_layer)
         .layer(GrpcWebLayer::new())
+        .layer(TraceLayer::new_for_grpc())
         .add_service(HealthServiceServer::new(health_service))
         .add_service(reflection_v1)
         .add_service(reflection_v1alpha)

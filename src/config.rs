@@ -2,6 +2,7 @@
 pub struct Config {
     pub listen_addr: String,
     pub log_level: String,
+    pub log_style: String,
     pub cors_origins: Vec<String>,
     pub database_url: Option<String>,
     pub redis_url: Option<String>,
@@ -13,6 +14,7 @@ impl Config {
         Self {
             listen_addr: env_or("LISTEN_ADDR", "0.0.0.0:50051"),
             log_level: env_or("LOG_LEVEL", "info"),
+            log_style: env_or("LOG_STYLE", "auto"),
             cors_origins: env_or("CORS_ORIGINS", "*")
                 .split(',')
                 .map(|s| s.trim().to_owned())
