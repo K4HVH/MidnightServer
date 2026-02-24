@@ -10,7 +10,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .file_descriptor_set_path(&descriptor_file)
         .compile_protos(&["proto/midnightui/health.proto"], &["proto/"])?;
 
-    // Copy generated files into src/proto/generated/ so they're inspectable.
     let generated_dir = PathBuf::from("src/proto/generated");
     fs::create_dir_all(&generated_dir)?;
 

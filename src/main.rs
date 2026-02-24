@@ -1,19 +1,22 @@
+use std::sync::Arc;
+
 use anyhow::Result;
 use std::net::SocketAddr;
 
 use tonic::transport::Server;
 use tonic_reflection::server::Builder as ReflectionBuilder;
 use tonic_web::GrpcWebLayer;
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::cors::{AllowOrigin, Any, CorsLayer};
 use tracing_subscriber::{EnvFilter, fmt, layer::SubscriberExt, util::SubscriberInitExt};
 
 mod config;
 mod grpc;
 mod proto;
+mod state;
 
 use proto::health_service_server::HealthServiceServer;
+use state::AppState;
 
-/// File descriptor set compiled from proto/ — used for gRPC reflection.
 pub const FILE_DESCRIPTOR_SET: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/src/proto/generated/descriptors.bin"
@@ -21,15 +24,25 @@ pub const FILE_DESCRIPTOR_SET: &[u8] = include_bytes!(concat!(
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    let _ = dotenvy::dotenv();
+
+    let config = config::Config::from_env();
+
     tracing_subscriber::registry()
-        .with(EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()))
+        .with(
+            EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| EnvFilter::new(&config.log_level)),
+        )
         .with(fmt::layer())
         .init();
 
-    let config = config::Config::from_env();
     let addr: SocketAddr = config.listen_addr.parse()?;
 
-    let health_service = grpc::health::HealthServiceImpl::new();
+    let cors_layer = build_cors_layer(&config);
+
+    let state = AppState::new(config);
+
+    let health_service = grpc::health::HealthServiceImpl::new(Arc::clone(&state));
 
     let reflection_v1 = ReflectionBuilder::configure()
         .register_encoded_file_descriptor_set(FILE_DESCRIPTOR_SET)
@@ -38,12 +51,6 @@ async fn main() -> Result<()> {
     let reflection_v1alpha = ReflectionBuilder::configure()
         .register_encoded_file_descriptor_set(FILE_DESCRIPTOR_SET)
         .build_v1alpha()?;
-
-    let cors_layer = CorsLayer::new()
-        .allow_origin(Any)
-        .allow_headers(Any)
-        .allow_methods(Any)
-        .expose_headers(Any);
 
     tracing::info!("MidnightServer listening on {addr}");
 
@@ -58,6 +65,24 @@ async fn main() -> Result<()> {
         .await?;
 
     Ok(())
+}
+
+fn build_cors_layer(config: &config::Config) -> CorsLayer {
+    let origin = if config.cors_is_permissive() {
+        CorsLayer::new().allow_origin(Any)
+    } else {
+        let origins: Vec<_> = config
+            .cors_origins
+            .iter()
+            .filter_map(|o| o.parse().ok())
+            .collect();
+        CorsLayer::new().allow_origin(AllowOrigin::list(origins))
+    };
+
+    origin
+        .allow_headers(Any)
+        .allow_methods(Any)
+        .expose_headers(Any)
 }
 
 async fn shutdown_signal() {

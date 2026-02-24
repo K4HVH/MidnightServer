@@ -1,24 +1,19 @@
-# ---------- Build stage ----------
 FROM rust:1.85-slim AS builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends protobuf-compiler && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy manifests first for dependency caching.
 COPY Cargo.toml Cargo.lock ./
 
-# Create a dummy src to build dependencies only.
 RUN mkdir -p src/proto/generated && echo "fn main() {}" > src/main.rs
 COPY build.rs ./
 COPY proto/ proto/
 RUN cargo build --release && rm -rf src target/release/deps/MidnightServer*
 
-# Now copy the real source and build.
 COPY src/ src/
 RUN cargo build --release
 
-# ---------- Runtime stage ----------
 FROM debian:bookworm-slim
 
 RUN apt-get update \

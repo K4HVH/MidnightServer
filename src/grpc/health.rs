@@ -1,18 +1,17 @@
-use std::time::Instant;
+use std::sync::Arc;
 
 use crate::proto::{CheckRequest, CheckResponse, check_response::ServingStatus};
 use crate::proto::health_service_server::HealthService;
+use crate::state::AppState;
 use tonic::{Request, Response, Status};
 
 pub struct HealthServiceImpl {
-    started_at: Instant,
+    state: Arc<AppState>,
 }
 
 impl HealthServiceImpl {
-    pub fn new() -> Self {
-        Self {
-            started_at: Instant::now(),
-        }
+    pub fn new(state: Arc<AppState>) -> Self {
+        Self { state }
     }
 }
 
@@ -25,7 +24,7 @@ impl HealthService for HealthServiceImpl {
         let response = CheckResponse {
             status: ServingStatus::Serving.into(),
             version: env!("CARGO_PKG_VERSION").to_string(),
-            uptime_seconds: self.started_at.elapsed().as_secs() as i64,
+            uptime_seconds: self.state.uptime_secs() as i64,
         };
 
         Ok(Response::new(response))
