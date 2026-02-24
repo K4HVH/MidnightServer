@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::time::Duration;
 
 use anyhow::Result;
 use std::net::SocketAddr;
@@ -33,6 +34,15 @@ async fn main() -> Result<()> {
     let cors_layer = build_cors_layer(&config);
 
     let state = AppState::new(config);
+
+    state
+        .health()
+        .register(
+            "server",
+            Duration::from_secs(60),
+            Box::new(|| Box::pin(async { Ok(()) })),
+        )
+        .await;
 
     let health_service = grpc::health::HealthServiceImpl::new(Arc::clone(&state));
 

@@ -5,7 +5,7 @@ package midnightui;
 // CheckRequest can optionally specify a service to check.
 // If empty, the overall server health is checked.
 message CheckRequest {
-  string service = 1;
+  optional string service = 1;
 }
 
 // CheckResponse contains the serving status of the queried service.
@@ -20,6 +20,7 @@ message CheckResponse {
   ServingStatus status = 1;
   string version = 2;
   int64 uptime_seconds = 3;
+  optional string message = 4;
 }
 
 // HealthService provides health checking for the server and its services.

@@ -3,8 +3,8 @@
 /// If empty, the overall server health is checked.
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct CheckRequest {
-    #[prost(string, tag = "1")]
-    pub service: ::prost::alloc::string::String,
+    #[prost(string, optional, tag = "1")]
+    pub service: ::core::option::Option<::prost::alloc::string::String>,
 }
 /// CheckResponse contains the serving status of the queried service.
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
@@ -15,6 +15,8 @@ pub struct CheckResponse {
     pub version: ::prost::alloc::string::String,
     #[prost(int64, tag = "3")]
     pub uptime_seconds: i64,
+    #[prost(string, optional, tag = "4")]
+    pub message: ::core::option::Option<::prost::alloc::string::String>,
 }
 /// Nested message and enum types in `CheckResponse`.
 pub mod check_response {
