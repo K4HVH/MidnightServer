@@ -9,15 +9,12 @@ use tonic_web::GrpcWebLayer;
 use tower_http::cors::{AllowOrigin, Any, CorsLayer};
 use tower_http::trace::TraceLayer;
 
-mod config;
-pub mod error;
+mod core;
 mod grpc;
-mod logging;
 mod proto;
-mod state;
 
+use core::state::AppState;
 use proto::health_service_server::HealthServiceServer;
-use state::AppState;
 
 pub const FILE_DESCRIPTOR_SET: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -28,8 +25,8 @@ pub const FILE_DESCRIPTOR_SET: &[u8] = include_bytes!(concat!(
 async fn main() -> Result<()> {
     let _ = dotenvy::dotenv();
 
-    let config = config::Config::from_env();
-    logging::init(&config);
+    let config = core::config::Config::from_env();
+    core::logging::init(&config);
 
     let addr: SocketAddr = config.listen_addr.parse()?;
 
@@ -53,7 +50,34 @@ async fn main() -> Result<()> {
         .accept_http1(true)
         .layer(cors_layer)
         .layer(GrpcWebLayer::new())
-        .layer(TraceLayer::new_for_grpc())
+        .layer(
+            TraceLayer::new_for_grpc()
+                .make_span_with(|req: &http::Request<_>| {
+                    tracing::info_span!("grpc", method = %req.uri().path())
+                })
+                .on_request(|_req: &http::Request<_>, _span: &tracing::Span| {
+                    tracing::info!("request received");
+                })
+                .on_response(
+                    |res: &http::Response<_>,
+                     latency: std::time::Duration,
+                     _span: &tracing::Span| {
+                        let status = res
+                            .headers()
+                            .get("grpc-status")
+                            .and_then(|v| v.to_str().ok())
+                            .unwrap_or("0");
+                        tracing::info!(latency_ms = latency.as_millis(), grpc_status = %status, "response sent");
+                    },
+                )
+                .on_failure(
+                    |err: tower_http::classify::GrpcFailureClass,
+                     latency: std::time::Duration,
+                     _span: &tracing::Span| {
+                        tracing::error!(?err, latency_ms = latency.as_millis(), "request failed");
+                    },
+                ),
+        )
         .add_service(HealthServiceServer::new(health_service))
         .add_service(reflection_v1)
         .add_service(reflection_v1alpha)
@@ -63,7 +87,7 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-fn build_cors_layer(config: &config::Config) -> CorsLayer {
+fn build_cors_layer(config: &core::config::Config) -> CorsLayer {
     let origin = if config.cors_is_permissive() {
         CorsLayer::new().allow_origin(Any)
     } else {

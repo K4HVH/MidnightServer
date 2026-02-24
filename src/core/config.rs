@@ -9,7 +9,6 @@ pub struct Config {
 }
 
 impl Config {
-    /// Load from environment variables. See `.env.example` for available keys.
     pub fn from_env() -> Self {
         Self {
             listen_addr: env_or("LISTEN_ADDR", "0.0.0.0:50051"),

@@ -3,7 +3,7 @@ use std::time::Instant;
 
 use arc_swap::{ArcSwap, Guard};
 
-use crate::config::Config;
+use super::config::Config;
 
 /// Shared application state passed to all gRPC services via `Arc<AppState>`.
 ///

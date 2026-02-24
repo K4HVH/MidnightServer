@@ -1,8 +1,8 @@
+use tracing_subscriber::fmt::format::FmtSpan;
 use tracing_subscriber::fmt::time::SystemTime;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, fmt};
-use tracing_subscriber::fmt::format::FmtSpan;
 
-use crate::config::Config;
+use super::config::Config;
 
 #[derive(Debug, Clone, Copy)]
 pub enum LogStyle {
@@ -36,12 +36,21 @@ pub fn init(config: &Config) {
     match style {
         LogStyle::Plain => {
             subscriber
-                .with(fmt::layer().with_ansi(false))
+                .with(
+                    fmt::layer()
+                        .with_ansi(false)
+                        .with_span_events(FmtSpan::CLOSE),
+                )
                 .init();
         }
         LogStyle::Compact => {
             subscriber
-                .with(fmt::layer().compact().with_target(false))
+                .with(
+                    fmt::layer()
+                        .compact()
+                        .with_target(false)
+                        .with_span_events(FmtSpan::CLOSE),
+                )
                 .init();
         }
         LogStyle::Pretty => {
@@ -68,7 +77,8 @@ pub fn init(config: &Config) {
                         .with_file(true)
                         .with_line_number(true)
                         .with_timer(SystemTime)
-                        .flatten_event(true),
+                        .flatten_event(true)
+                        .with_span_events(FmtSpan::CLOSE),
                 )
                 .init();
         }

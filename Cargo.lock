@@ -9,6 +9,7 @@ dependencies = [
  "anyhow",
  "arc-swap",
  "dotenvy",
+ "http",
  "prost",
  "prost-build",
  "prost-types",

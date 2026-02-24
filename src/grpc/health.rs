@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
-use crate::error::AppError;
+use crate::core::error::AppError;
+use crate::core::state::AppState;
 use crate::proto::{CheckRequest, CheckResponse, check_response::ServingStatus};
 use crate::proto::health_service_server::HealthService;
-use crate::state::AppState;
 use tonic::{Request, Response, Status};
 
 const KNOWN_SERVICES: &[&str] = &["", "midnightui.HealthService"];
