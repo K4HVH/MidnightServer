@@ -2,20 +2,23 @@ use std::sync::Arc;
 use std::time::Instant;
 
 use arc_swap::{ArcSwap, Guard};
+use sqlx::PgPool;
 
 use super::config::Config;
 use super::health::HealthRegistry;
 
 pub struct AppState {
     config: ArcSwap<Config>,
+    db: PgPool,
     health: HealthRegistry,
     started_at: Instant,
 }
 
 impl AppState {
-    pub fn new(config: Config) -> Arc<Self> {
+    pub fn new(config: Config, db: PgPool) -> Arc<Self> {
         Arc::new(Self {
             config: ArcSwap::from_pointee(config),
+            db,
             health: HealthRegistry::new(),
             started_at: Instant::now(),
         })
@@ -23,6 +26,10 @@ impl AppState {
 
     pub fn config(&self) -> Guard<Arc<Config>> {
         self.config.load()
+    }
+
+    pub fn db(&self) -> &PgPool {
+        &self.db
     }
 
     pub fn health(&self) -> &HealthRegistry {

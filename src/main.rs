@@ -33,7 +33,10 @@ async fn main() -> Result<()> {
 
     let cors_layer = build_cors_layer(&config);
 
-    let state = AppState::new(config);
+    let db = core::db::create_pool(&config.database_url).await?;
+    core::db::run_migrations(&db).await?;
+
+    let state = AppState::new(config, db);
 
     state
         .health()
@@ -41,6 +44,25 @@ async fn main() -> Result<()> {
             "server",
             Duration::from_secs(60),
             Box::new(|| Box::pin(async { Ok(()) })),
+        )
+        .await;
+
+    let db_pool = state.db().clone();
+    state
+        .health()
+        .register(
+            "database",
+            Duration::from_secs(30),
+            Box::new(move || {
+                let pool = db_pool.clone();
+                Box::pin(async move {
+                    sqlx::query("SELECT 1")
+                        .execute(&pool)
+                        .await
+                        .map(|_| ())
+                        .map_err(|e| e.to_string())
+                })
+            }),
         )
         .await;
 

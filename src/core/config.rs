@@ -4,8 +4,7 @@ pub struct Config {
     pub log_level: String,
     pub log_style: String,
     pub cors_origins: Vec<String>,
-    pub database_url: Option<String>,
-    pub redis_url: Option<String>,
+    pub database_url: String,
 }
 
 impl Config {
@@ -18,8 +17,8 @@ impl Config {
                 .split(',')
                 .map(|s| s.trim().to_owned())
                 .collect(),
-            database_url: std::env::var("DATABASE_URL").ok(),
-            redis_url: std::env::var("REDIS_URL").ok(),
+            database_url: std::env::var("DATABASE_URL")
+                .expect("DATABASE_URL must be set"),
         }
     }
 

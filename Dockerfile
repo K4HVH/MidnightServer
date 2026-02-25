@@ -9,6 +9,7 @@ COPY Cargo.toml Cargo.lock ./
 RUN mkdir -p src/proto/generated && echo "fn main() {}" > src/main.rs
 COPY build.rs ./
 COPY proto/ proto/
+COPY migrations/ migrations/
 RUN cargo build --release && rm -rf src target/release/deps/MidnightServer*
 
 COPY src/ src/
