@@ -58,4 +58,5 @@ impl From<AppError> for Status {
     }
 }
 
+#[allow(dead_code)]
 pub type AppResult<T> = Result<T, AppError>;

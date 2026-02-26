@@ -7,6 +7,7 @@ use sqlx::PgPool;
 use super::config::Config;
 use super::health::HealthRegistry;
 
+#[allow(dead_code)]
 pub struct AppState {
     config: ArcSwap<Config>,
     db: PgPool,
@@ -14,6 +15,7 @@ pub struct AppState {
     started_at: Instant,
 }
 
+#[allow(dead_code)]
 impl AppState {
     pub fn new(config: Config, db: PgPool) -> Arc<Self> {
         Arc::new(Self {

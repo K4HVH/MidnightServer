@@ -17,8 +17,7 @@ impl Config {
                 .split(',')
                 .map(|s| s.trim().to_owned())
                 .collect(),
-            database_url: std::env::var("DATABASE_URL")
-                .expect("DATABASE_URL must be set"),
+            database_url: std::env::var("DATABASE_URL").expect("DATABASE_URL must be set"),
         }
     }
 

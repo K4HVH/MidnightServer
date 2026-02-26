@@ -1,6 +1,6 @@
 use tracing_subscriber::fmt::format::FmtSpan;
 use tracing_subscriber::fmt::time::SystemTime;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, fmt};
+use tracing_subscriber::{EnvFilter, fmt, layer::SubscriberExt, util::SubscriberInitExt};
 
 use super::config::Config;
 
@@ -28,8 +28,8 @@ impl LogStyle {
 pub fn init(config: &Config) {
     let style = LogStyle::from_str(&config.log_style);
 
-    let env_filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new(&config.log_level));
+    let env_filter =
+        EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(&config.log_level));
 
     let subscriber = tracing_subscriber::registry().with(env_filter);
 

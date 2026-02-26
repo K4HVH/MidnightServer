@@ -3,8 +3,8 @@ use std::sync::Arc;
 use crate::core::error::AppError;
 use crate::core::health::ServiceStatus;
 use crate::core::state::AppState;
-use crate::proto::{CheckRequest, CheckResponse, check_response::ServingStatus};
 use crate::proto::health_service_server::HealthService;
+use crate::proto::{CheckRequest, CheckResponse, check_response::ServingStatus};
 use tonic::{Request, Response, Status};
 
 pub struct HealthServiceImpl {
@@ -26,9 +26,10 @@ impl HealthService for HealthServiceImpl {
         let service = request.get_ref().service.as_deref().unwrap_or("");
         let registry = self.state.health();
 
-        let health = registry.check(service).await.ok_or_else(|| {
-            AppError::NotFound(format!("unknown service: {service}"))
-        })?;
+        let health = registry
+            .check(service)
+            .await
+            .ok_or_else(|| AppError::NotFound(format!("unknown service: {service}")))?;
 
         tracing::debug!(service = %service, ?health.status, "health check");
 

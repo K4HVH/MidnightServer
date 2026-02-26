@@ -7,9 +7,8 @@ use std::time::Duration;
 use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
 
-pub type HealthCheckFn = Box<
-    dyn Fn() -> Pin<Box<dyn Future<Output = Result<(), String>> + Send>> + Send + Sync,
->;
+pub type HealthCheckFn =
+    Box<dyn Fn() -> Pin<Box<dyn Future<Output = Result<(), String>> + Send>> + Send + Sync>;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ServiceStatus {
@@ -30,6 +29,7 @@ pub struct HealthRegistry {
     tasks: RwLock<HashMap<String, JoinHandle<()>>>,
 }
 
+#[allow(dead_code)]
 impl HealthRegistry {
     pub fn new() -> Self {
         Self {
@@ -47,10 +47,7 @@ impl HealthRegistry {
         let name = name.into();
 
         let initial = run_probe(&name, &check).await;
-        self.services
-            .write()
-            .await
-            .insert(name.clone(), initial);
+        self.services.write().await.insert(name.clone(), initial);
 
         let services = Arc::clone(&self.services);
         let probe_name = name.clone();
@@ -98,11 +95,9 @@ impl HealthRegistry {
         let unhealthy: Vec<_> = services
             .iter()
             .filter(|(_, h)| h.status == ServiceStatus::NotServing)
-            .map(|(name, h)| {
-                match &h.message {
-                    Some(msg) => format!("{name}: {msg}"),
-                    None => name.clone(),
-                }
+            .map(|(name, h)| match &h.message {
+                Some(msg) => format!("{name}: {msg}"),
+                None => name.clone(),
             })
             .collect();
 
