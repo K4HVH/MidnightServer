@@ -45,11 +45,15 @@ jobs:
             ~/.cargo/registry/index
             ~/.cargo/registry/cache
             ~/.cargo/git/db
+            ~/.cargo/bin/cargo-sqlx
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ hashFiles('src/**', 'build.rs', 'proto/**', 'migrations/**') }}
           restore-keys: |
             ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-
             ${{ runner.os }}-cargo-
+
+      - name: Install sqlx-cli
+        run: command -v cargo-sqlx || cargo install sqlx-cli --no-default-features --features postgres
 
       - name: Check formatting
         run: cargo fmt --check
