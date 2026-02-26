@@ -56,8 +56,8 @@ async fn main() -> Result<()> {
             Box::new(move || {
                 let pool = db_pool.clone();
                 Box::pin(async move {
-                    sqlx::query("SELECT 1")
-                        .execute(&pool)
+                    sqlx::query!("SELECT 1 as health_check")
+                        .fetch_one(&pool)
                         .await
                         .map(|_| ())
                         .map_err(|e| e.to_string())
