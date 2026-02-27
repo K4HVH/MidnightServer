@@ -146,3 +146,7 @@ impl Drop for HealthRegistry {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "../../tests/core/health.rs"]
+mod tests;

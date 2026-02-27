@@ -80,3 +80,7 @@ impl HealthService for HealthServiceImpl {
         Ok(Response::new(to_proto(&health)))
     }
 }
+
+#[cfg(test)]
+#[path = "../../tests/grpc/health.rs"]
+mod tests;

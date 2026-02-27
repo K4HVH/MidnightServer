@@ -55,3 +55,7 @@ impl AppState {
         self.started_at.elapsed().as_secs()
     }
 }
+
+#[cfg(test)]
+#[path = "../../tests/core/state.rs"]
+mod tests;

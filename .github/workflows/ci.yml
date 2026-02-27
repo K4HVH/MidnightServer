@@ -73,10 +73,10 @@ jobs:
         env:
           SQLX_OFFLINE: "true"
 
-      # - name: Run tests
-      #   run: cargo test
-      #   env:
-      #     SQLX_OFFLINE: "true"
+      - name: Run tests
+        run: cargo test
+        env:
+          SQLX_OFFLINE: "true"
 
   build-image:
     needs: check

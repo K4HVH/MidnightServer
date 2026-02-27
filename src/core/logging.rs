@@ -86,3 +86,7 @@ pub fn init(config: &Config) {
 
     tracing::info!(log_level = %config.log_level, log_style = ?style, "logging initialized");
 }
+
+#[cfg(test)]
+#[path = "../../tests/core/logging.rs"]
+mod tests;

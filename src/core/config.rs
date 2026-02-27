@@ -29,3 +29,7 @@ impl Config {
 fn env_or(key: &str, default: &str) -> String {
     std::env::var(key).unwrap_or_else(|_| default.to_owned())
 }
+
+#[cfg(test)]
+#[path = "../../tests/core/config.rs"]
+mod tests;

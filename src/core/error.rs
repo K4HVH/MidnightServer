@@ -58,5 +58,9 @@ impl From<AppError> for Status {
     }
 }
 
+#[cfg(test)]
+#[path = "../../tests/core/error.rs"]
+mod tests;
+
 #[allow(dead_code)]
 pub type AppResult<T> = Result<T, AppError>;
