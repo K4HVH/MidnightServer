@@ -88,7 +88,8 @@ async fn main() -> Result<()> {
         .layer(
             TraceLayer::new_for_grpc()
                 .make_span_with(|req: &http::Request<_>| {
-                    tracing::info_span!("grpc", method = %req.uri().path())
+                    let request_id = uuid::Uuid::new_v4();
+                    tracing::info_span!("grpc", %request_id, method = %req.uri().path())
                 })
                 .on_request(|_req: &http::Request<_>, _span: &tracing::Span| {
                     tracing::info!("request received");
