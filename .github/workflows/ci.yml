@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install protobuf compiler
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends protobuf-compiler
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends protobuf-compiler libprotobuf-dev
 
       - name: Cache Rust toolchain
         uses: actions/cache@v4
