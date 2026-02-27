@@ -5,6 +5,7 @@ pub struct Config {
     pub log_style: String,
     pub cors_origins: Vec<String>,
     pub database_url: String,
+    pub request_timeout_secs: u64,
 }
 
 impl Config {
@@ -18,6 +19,9 @@ impl Config {
                 .map(|s| s.trim().to_owned())
                 .collect(),
             database_url: std::env::var("DATABASE_URL").expect("DATABASE_URL must be set"),
+            request_timeout_secs: env_or("REQUEST_TIMEOUT_SECS", "30")
+                .parse()
+                .expect("REQUEST_TIMEOUT_SECS must be a valid integer"),
         }
     }
 

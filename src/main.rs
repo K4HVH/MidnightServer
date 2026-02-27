@@ -83,6 +83,7 @@ async fn main() -> Result<()> {
 
     Server::builder()
         .accept_http1(true)
+        .timeout(Duration::from_secs(state.config().request_timeout_secs))
         .layer(cors_layer)
         .layer(GrpcWebLayer::new())
         .layer(

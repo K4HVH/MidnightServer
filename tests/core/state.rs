@@ -7,6 +7,7 @@ fn test_config() -> Config {
         log_style: "plain".to_owned(),
         cors_origins: vec!["*".to_owned()],
         database_url: "postgres://localhost/test".to_owned(),
+        request_timeout_secs: 30,
     }
 }
 
@@ -38,6 +39,7 @@ async fn update_config_swaps_atomically() {
         log_style: "json".to_owned(),
         cors_origins: vec!["http://example.com".to_owned()],
         database_url: "postgres://localhost/other".to_owned(),
+        request_timeout_secs: 60,
     };
 
     state.update_config(new_config);

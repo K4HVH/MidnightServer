@@ -160,6 +160,7 @@ fn test_config() -> crate::core::config::Config {
         log_style: "plain".to_owned(),
         cors_origins: vec!["*".to_owned()],
         database_url: "postgres://localhost/test".to_owned(),
+        request_timeout_secs: 30,
     }
 }
 
