@@ -74,6 +74,7 @@ All via environment variables (see [.env.example](.env.example)):
 | `LOG_STYLE` | `auto` | `plain`, `compact`, `pretty`, `json`, or `auto` |
 | `CORS_ORIGINS` | `*` | Comma-separated origins, or `*` |
 | `REQUEST_TIMEOUT_SECS` | `30` | Per-request gRPC timeout |
+| `DB_MAX_CONNECTIONS` | `20` | Max database pool connections |
 
 ## Project layout
 

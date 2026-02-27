@@ -11,6 +11,7 @@ fn with_env(vars: &[(&str, &str)], f: impl FnOnce() + std::panic::UnwindSafe) {
         "LOG_STYLE",
         "CORS_ORIGINS",
         "DATABASE_URL",
+        "DB_MAX_CONNECTIONS",
         "REQUEST_TIMEOUT_SECS",
     ];
     unsafe {
@@ -40,6 +41,7 @@ fn defaults_applied_when_env_unset() {
         assert_eq!(config.log_level, "info");
         assert_eq!(config.log_style, "auto");
         assert_eq!(config.cors_origins, vec!["*"]);
+        assert_eq!(config.db_max_connections, 5);
         assert_eq!(config.request_timeout_secs, 30);
     });
 }
@@ -53,6 +55,7 @@ fn env_vars_override_defaults() {
             ("LOG_STYLE", "json"),
             ("CORS_ORIGINS", "http://a.com,http://b.com"),
             ("DATABASE_URL", "postgres://localhost/test"),
+            ("DB_MAX_CONNECTIONS", "20"),
             ("REQUEST_TIMEOUT_SECS", "10"),
         ],
         || {
@@ -61,6 +64,7 @@ fn env_vars_override_defaults() {
             assert_eq!(config.log_level, "debug");
             assert_eq!(config.log_style, "json");
             assert_eq!(config.cors_origins, vec!["http://a.com", "http://b.com"]);
+            assert_eq!(config.db_max_connections, 20);
             assert_eq!(config.request_timeout_secs, 10);
         },
     );

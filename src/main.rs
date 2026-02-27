@@ -33,7 +33,7 @@ async fn main() -> Result<()> {
 
     let cors_layer = build_cors_layer(&config);
 
-    let db = core::db::create_pool(&config.database_url).await?;
+    let db = core::db::create_pool(&config.database_url, config.db_max_connections).await?;
     core::db::run_migrations(&db).await?;
 
     let state = AppState::new(config, db);
