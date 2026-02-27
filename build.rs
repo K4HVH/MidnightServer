@@ -8,7 +8,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build_server(true)
         .build_client(false)
         .file_descriptor_set_path(&descriptor_file)
-        .compile_protos(&["proto/midnightui/health.proto"], &["proto/"])?;
+        .compile_protos(
+            &[
+                "proto/midnightui/midnight.proto",
+                "proto/midnightui/midnight_services.proto",
+            ],
+            &["proto/midnightui/"],
+        )?;
 
     let generated_dir = PathBuf::from("src/proto/generated");
     fs::create_dir_all(&generated_dir)?;

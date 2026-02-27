@@ -1,10 +1,11 @@
 use std::sync::Arc;
 
 use crate::core::error::AppError;
-use crate::core::health::ServiceStatus;
+use crate::core::health::{ServiceHealth, ServiceStatus};
 use crate::core::state::AppState;
 use crate::proto::health_service_server::HealthService;
-use crate::proto::{CheckRequest, CheckResponse, check_response::ServingStatus};
+use crate::proto::service_health::ServingStatus;
+use crate::proto::{OptionalIdRequest, ServiceHealthList};
 use tonic::{Request, Response, Status};
 
 pub struct HealthServiceImpl {
@@ -17,34 +18,65 @@ impl HealthServiceImpl {
     }
 }
 
+fn to_proto(h: &ServiceHealth) -> crate::proto::ServiceHealth {
+    let status = match h.status {
+        ServiceStatus::Serving => ServingStatus::Serving,
+        ServiceStatus::NotServing => ServingStatus::NotServing,
+    };
+
+    let uptime = h.uptime();
+    let interval = h.interval;
+
+    crate::proto::ServiceHealth {
+        id: h.id.to_string(),
+        name: h.name.clone(),
+        status: status.into(),
+        interval: Some(prost_types::Duration {
+            seconds: interval.as_secs() as i64,
+            nanos: interval.subsec_nanos() as i32,
+        }),
+        uptime: Some(prost_types::Duration {
+            seconds: uptime.as_secs() as i64,
+            nanos: uptime.subsec_nanos() as i32,
+        }),
+        version: h.version.clone(),
+        message: h.message.clone(),
+    }
+}
+
 #[tonic::async_trait]
 impl HealthService for HealthServiceImpl {
-    async fn check(
+    async fn list_health_services(
         &self,
-        request: Request<CheckRequest>,
-    ) -> Result<Response<CheckResponse>, Status> {
-        let service = request.get_ref().service.as_deref().unwrap_or("");
-        let registry = self.state.health();
+        _request: Request<()>,
+    ) -> Result<Response<ServiceHealthList>, Status> {
+        let services = self.state.health().list().await;
+        let services = services.iter().map(to_proto).collect();
+        Ok(Response::new(ServiceHealthList { services }))
+    }
 
-        let health = registry
-            .check(service)
-            .await
-            .ok_or_else(|| AppError::NotFound(format!("unknown service: {service}")))?;
+    async fn get_health_service(
+        &self,
+        request: Request<OptionalIdRequest>,
+    ) -> Result<Response<crate::proto::ServiceHealth>, Status> {
+        let id = request.get_ref().id.as_deref().unwrap_or("");
 
-        tracing::debug!(service = %service, ?health.status, "health check");
-
-        let proto_status = match health.status {
-            ServiceStatus::Serving => ServingStatus::Serving,
-            ServiceStatus::NotServing => ServingStatus::NotServing,
+        let health = if id.is_empty() {
+            self.state
+                .health()
+                .get_by_name("server")
+                .await
+                .ok_or_else(|| AppError::NotFound("server service not registered".into()))?
+        } else {
+            let uuid = uuid::Uuid::parse_str(id)
+                .map_err(|_| AppError::InvalidArgument(format!("invalid uuid: {id}")))?;
+            self.state
+                .health()
+                .get(&uuid)
+                .await
+                .ok_or_else(|| AppError::NotFound(format!("unknown service: {id}")))?
         };
 
-        let response = CheckResponse {
-            status: proto_status.into(),
-            version: env!("CARGO_PKG_VERSION").to_string(),
-            uptime_seconds: self.state.uptime_secs() as i64,
-            message: health.message,
-        };
-
-        Ok(Response::new(response))
+        Ok(Response::new(to_proto(&health)))
     }
 }

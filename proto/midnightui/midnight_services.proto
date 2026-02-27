@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package midnight;
+import "midnight.proto";
+import "google/protobuf/empty.proto";
+
+// Generic request
+message IdRequest {
+  string id = 1;
+}
+
+message OptionalIdRequest {
+  optional string id = 1;
+}
+
+// HealthService provides health checking for the server and its services.
+service HealthService {
+  rpc ListHealthServices(google.protobuf.Empty) returns (ServiceHealthList);
+  rpc GetHealthService(OptionalIdRequest) returns (ServiceHealth);
+}

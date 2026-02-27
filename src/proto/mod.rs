@@ -1,1 +1,1 @@
-include!("generated/midnightui.rs");
+include!("generated/midnight.rs");

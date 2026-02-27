@@ -43,16 +43,19 @@ async fn main() -> Result<()> {
         .register(
             "server",
             Duration::from_secs(60),
+            Some(env!("CARGO_PKG_VERSION").to_owned()),
             Box::new(|| Box::pin(async { Ok(()) })),
         )
         .await;
 
+    let db_version = get_db_version(state.db()).await;
     let db_pool = state.db().clone();
     state
         .health()
         .register(
             "database",
             Duration::from_secs(30),
+            db_version,
             Box::new(move || {
                 let pool = db_pool.clone();
                 Box::pin(async move {
@@ -135,6 +138,14 @@ fn build_cors_layer(config: &core::config::Config) -> CorsLayer {
         .allow_headers(Any)
         .allow_methods(Any)
         .expose_headers(Any)
+}
+
+async fn get_db_version(pool: &sqlx::PgPool) -> Option<String> {
+    sqlx::query_scalar!("SELECT version()")
+        .fetch_one(pool)
+        .await
+        .ok()
+        .flatten()
 }
 
 async fn shutdown_signal() {
