@@ -10,10 +10,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .file_descriptor_set_path(&descriptor_file)
         .compile_protos(
             &[
-                "proto/midnightui/midnight.proto",
-                "proto/midnightui/midnight_services.proto",
+                "proto/midnight/midnight.proto",
+                "proto/midnight/midnight_services.proto",
             ],
-            &["proto/midnightui/"],
+            &["proto/midnight/"],
         )?;
 
     let generated_dir = PathBuf::from("src/proto/generated");

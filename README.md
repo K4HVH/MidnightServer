@@ -1,6 +1,6 @@
 # MidnightServer
 
-A Rust gRPC backend template built with [tonic](https://github.com/hyperium/tonic), designed as the server counterpart to [MidnightUI](https://github.com/your-org/MidnightUI) (SolidJS frontend). Includes everything needed to start building production gRPC services: database, health checks, structured logging, error handling, and gRPC-Web support.
+A Rust gRPC backend template built with [tonic](https://github.com/hyperium/tonic), designed as the server counterpart to [MidnightUI](https://github.com/k4hvh/MidnightUI) (SolidJS frontend). Includes everything needed to start building production gRPC services: database, health checks, structured logging, error handling, and gRPC-Web support.
 
 ## Features
 
@@ -127,7 +127,7 @@ The pool is created with `PgPoolOptions::new().max_connections(5)`. The `PgPool`
 
 ## Adding a New gRPC Service
 
-1. **Define the proto** — add a `.proto` file in `proto/midnightui/`
+1. **Define the proto** — add a `.proto` file in `proto/midnight/`
 2. **Rebuild** — `cargo build` runs `build.rs` which generates Rust code into `src/proto/generated/`
 3. **Implement the handler** — create a file in `src/grpc/`, implement the generated trait
 4. **Register the service** — add it to the `Server::builder()` chain in `main.rs`
