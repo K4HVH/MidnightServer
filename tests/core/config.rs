@@ -41,7 +41,7 @@ fn defaults_applied_when_env_unset() {
         assert_eq!(config.log_level, "info");
         assert_eq!(config.log_style, "auto");
         assert_eq!(config.cors_origins, vec!["*"]);
-        assert_eq!(config.db_max_connections, 5);
+        assert_eq!(config.db_max_connections, 20);
         assert_eq!(config.request_timeout_secs, 30);
     });
 }
